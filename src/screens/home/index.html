@@ -1,4 +1,27 @@
 <div class="home-component-header">
   Home Page
-  <sample-component></sample-component>
+  <table>
+    <thead>
+      <tr>
+        <th class="tablePadding">Schedule</th>
+        <th class="tablePadding">Class</th>
+        <th ng-repeat="size in $ctrl.sizes">
+          {{size}}
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr ng-repeat="c in $ctrl.classes" ng-init="outerIndex = $index">
+        <td>
+          {{$ctrl.schedule[$index]}}
+        </td>
+        <td>
+          {{$ctrl.classes[$index]}}
+        </td>
+        <td ng-repeat="size in $ctrl.sizes">
+          {{$ctrl.getLaborFactor($ctrl.schedule[outerIndex], $ctrl.classes[outerIndex], size)}}
+        </td>
+      </tr>
+    </tbody>
+  </table>
 </div>
