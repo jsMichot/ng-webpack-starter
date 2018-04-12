@@ -11,8 +11,6 @@ main-layout {
   }
   .main-layout-component-content {
     @include flexContent();
-    color: $tertiary;
-    background: $bg-tertiary;
     margin-top: 71px;
     border-radius: 4px;
   }
