@@ -1,7 +1,8 @@
 import './index.scss';
 import template from './index.html';
+import _ from 'lodash';
 
-function controller() {
+export function controller() {
   const $ctrl = this;
 
   $ctrl.data = [
@@ -12,32 +13,77 @@ function controller() {
     {id: 1, size: 3, class: '150', schedule: '', laborFactor: 1.2},
     {id: 1, size: 3, class: '300', schedule: '', laborFactor: 1.3},
     {id: 1, size: 3, class: '450', schedule: '', laborFactor: 1.4},
+    {id: 1, size: 3, class: '450', schedule: '80', laborFactor: 1.4},
   ];
 
-  $ctrl.sizes = $ctrl.data.reduce((sizes, item) => {
-    return sizes.includes(item.size) ? sizes : sizes.concat(item.size);
-  }, []);
+  $ctrl.$onInit = onInit;
+  $ctrl.getLaborFactor = getLaborFactor;
+  $ctrl.getSizes = getSizes;
+  $ctrl.getScheduleClassPairs = getScheduleClassPairs;
+  $ctrl.editing = false;
+  $ctrl.editLaborFactor = editLaborFactor;
+  $ctrl.setLaborFactors = setLaborFactors;
 
-  $ctrl.classes = $ctrl.data.reduce((classes, item) => {
-    return classes.includes(item.class) ? classes : classes.concat(item.class);
-  }, []);
+  function onInit() {
+    $ctrl.sizes = getSizes($ctrl.data);
+    $ctrl.scheduleClassPairs = getScheduleClassPairs($ctrl.data, $ctrl.sizes);
+  }
 
-  $ctrl.schedule = $ctrl.data.reduce((schedule, item) => {
-    return schedule.includes(item.schedule) ? schedule : schedule.concat(item.schedule);
-  }, []);
+  function getSizes(data) {
+    const sizeMap = data.reduce(
+      (acc, item) => ({...acc, [item.size]: true}),
+      {}
+    );
+    return Object.keys(sizeMap).map(x => parseInt(x, 10));
+  }
 
-  $ctrl.getLaborFactor = (sch, cl, siz) =>
-    $ctrl.data.reduce((lf, item) => {
-      const {size, schedule, laborFactor} = item;
-      if ((sch == schedule || sch === undefined) && cl == item.class && siz == size) {
-        lf = laborFactor;
+  function getScheduleClassPairs(data, sizes) {
+    return data.reduce((uniquePairs, item) => {
+      const currentPair = {
+        schedule: item.schedule,
+        class: item.class,
+      };
+      console.log(currentPair);
+      if (_.find(uniquePairs, currentPair)) {
+        return uniquePairs;
       }
-      return lf;
-    }, 0);
+      for (let size of getSizes(data)) {
+        const classScheduleSizeMatch = _.find(data, {
+          class: currentPair.class,
+          schedule: currentPair.schedule,
+          size,
+        }) || {laborFactor: 0};
 
-  $ctrl.$onInit = () => {
-    console.log('home init');
-  };
+        currentPair[size] = classScheduleSizeMatch.laborFactor;
+      }
+      return uniquePairs.concat(currentPair);
+    }, []);
+  }
+
+  function getLaborFactor(schedule, class_, size) {
+    return $ctrl.data.reduce((laborFactor, item) => {
+      if (
+        (item.schedule == schedule || schedule === undefined) &&
+        class_ == item.class &&
+        item.size == size
+      ) {
+        laborFactor = item.laborFactor;
+      }
+      return laborFactor;
+    }, 0);
+  }
+
+  function editLaborFactor() {
+    $ctrl.editing = true;
+    $ctrl.editValues = $ctrl.scheduleClassPairs;
+  }
+
+  function setLaborFactors() {
+    $ctrl.editing = false;
+    $ctrl.scheduleClassPairs = $ctrl.editValues;
+  }
 }
 
-export default angular.module('ng-starter.home', []).component('home', {template, controller}).name;
+export default angular
+  .module('ng-starter.home', [])
+  .component('home', {template, controller}).name;

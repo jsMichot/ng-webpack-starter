@@ -1,5 +1,6 @@
 <div class="home-component-header">
   Home Page
+  <button ng-show="$ctrl.editing" ng-click="$ctrl.setLaborFactors()">Update Labor Factors</button>
   <table>
     <thead>
       <tr>
@@ -11,15 +12,19 @@
       </tr>
     </thead>
     <tbody>
-      <tr ng-repeat="c in $ctrl.classes" ng-init="outerIndex = $index">
+      <tr ng-repeat="pair in $ctrl.scheduleClassPairs" ng-init="outerIndex = $index" ng-click="$ctrl.editLaborFactor()">
         <td>
-          {{$ctrl.schedule[$index]}}
+          {{pair.schedule}}
         </td>
         <td>
-          {{$ctrl.classes[$index]}}
+          {{pair.class}}
         </td>
         <td ng-repeat="size in $ctrl.sizes">
-          {{$ctrl.getLaborFactor($ctrl.schedule[outerIndex], $ctrl.classes[outerIndex], size)}}
+          <span ng-hide="$ctrl.editing">
+            {{$ctrl.scheduleClassPairs[outerIndex][size]}}
+          </span>
+          <input type="text" ng-show="$ctrl.editing" ng-model="$ctrl.editValues[outerIndex][size]" ng-value="$ctrl.getLaborFactor($ctrl.scheduleClassPairs[outerIndex].schedule, $ctrl.scheduleClassPairs[outerIndex].class, size)"
+          />
         </td>
       </tr>
     </tbody>
