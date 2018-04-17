@@ -68,19 +68,52 @@ describe('home component', () => {
   });
 
   it('editLaborFactor should set editValues to scheduleClassPairs', () => {
-    $ctrl.scheduleClassPairs = {foo: 1};
+    $ctrl.scheduleClassPairs = [{foo: 1}];
     $ctrl.editLaborFactor();
 
     expect($ctrl.editing).toBe(true);
-    expect($ctrl.editValues).toEqual({foo: 1});
+    expect($ctrl.editValues).toEqual([{foo: 1}]);
   });
 
   it('setLaborFactor should set scheduleClassPairs to editValues', () => {
-    $ctrl.scheduleClassPairs = {foo: 1};
-    $ctrl.editValues = {foo: 2};
+    $ctrl.scheduleClassPairs = [{foo: 1}];
+    $ctrl.editValues = [{foo: 2}];
     $ctrl.setLaborFactors();
 
     expect($ctrl.editing).toBe(false);
-    expect($ctrl.scheduleClassPairs).toEqual({foo: 2});
+    expect($ctrl.scheduleClassPairs).toEqual([{foo: 2}]);
+  });
+
+  it('cancelEdit should set editValues to scheduleClassPairs and editing to false', () => {
+    $ctrl.scheduleClassPairs = [{foo: 1}];
+    $ctrl.editValues = [{foo: 2}];
+    $ctrl.cancelEdit();
+    expect($ctrl.editValues).toEqual([{foo: 1}]);
+    expect($ctrl.editing).toBe(false);
+  });
+
+  it('when editLaborFactor is called editValues and scheduleClassPairs should not point to the same array nor the same objects', () => {
+    $ctrl.scheduleClassPairs = [{foo: 1}];
+    $ctrl.editLaborFactor();
+    $ctrl.editValues[0].foo = 2;
+
+    expect($ctrl.scheduleClassPairs).toEqual([{foo: 1}]);
+  });
+  it('when cancelEdit is called editValues and scheduleClassPairs should not point to the same array nor the same objects', () => {
+    $ctrl.scheduleClassPairs = [{foo: 1}];
+    $ctrl.editLaborFactor();
+    $ctrl.editValues[0].foo = 2;
+    $ctrl.cancelEdit();
+    $ctrl.editLaborFactor();
+
+    expect($ctrl.editValues).toEqual([{foo: 1}]);
+  });
+  it('when cancelEdit is called scheduleClassPairs should retain pre-editing value', () => {
+    $ctrl.scheduleClassPairs = [{foo: 1}];
+    $ctrl.editLaborFactor();
+    $ctrl.editValues[0].foo = 2;
+    $ctrl.cancelEdit();
+
+    expect($ctrl.scheduleClassPairs).toEqual([{foo: 1}]);
   });
 });

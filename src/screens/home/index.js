@@ -23,6 +23,7 @@ export function controller() {
   $ctrl.editing = false;
   $ctrl.editLaborFactor = editLaborFactor;
   $ctrl.setLaborFactors = setLaborFactors;
+  $ctrl.cancelEdit = cancelEdit;
 
   function onInit() {
     $ctrl.sizes = getSizes($ctrl.data);
@@ -43,7 +44,6 @@ export function controller() {
         schedule: item.schedule,
         class: item.class,
       };
-      console.log(currentPair);
       if (_.find(uniquePairs, currentPair)) {
         return uniquePairs;
       }
@@ -74,13 +74,24 @@ export function controller() {
   }
 
   function editLaborFactor() {
+    $ctrl.editValues = $ctrl.scheduleClassPairs.map(pair =>
+      Object.assign({}, pair)
+    );
     $ctrl.editing = true;
-    $ctrl.editValues = $ctrl.scheduleClassPairs;
   }
 
   function setLaborFactors() {
+    $ctrl.scheduleClassPairs = $ctrl.editValues.map(pair =>
+      Object.assign({}, pair)
+    );
     $ctrl.editing = false;
-    $ctrl.scheduleClassPairs = $ctrl.editValues;
+  }
+
+  function cancelEdit() {
+    $ctrl.editValues = $ctrl.scheduleClassPairs.map(pair =>
+      Object.assign({}, pair)
+    );
+    $ctrl.editing = false;
   }
 }
 
