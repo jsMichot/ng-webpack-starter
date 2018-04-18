@@ -1,33 +1,25 @@
 import './index.scss';
 import template from './index.html';
 import _ from 'lodash';
+// import ApiService from '../../services/api.js';
 
-export function controller() {
+export function controller(api) {
   const $ctrl = this;
 
-  $ctrl.data = [
-    {id: 1, size: 1, class: '150', schedule: '', laborFactor: 1.2},
-    {id: 1, size: 1, class: '300', schedule: '', laborFactor: 2.2},
-    {id: 1, size: 2, class: '150', schedule: '', laborFactor: 1.2},
-    {id: 1, size: 2, class: '300', schedule: '', laborFactor: 2.2},
-    {id: 1, size: 3, class: '150', schedule: '', laborFactor: 1.2},
-    {id: 1, size: 3, class: '300', schedule: '', laborFactor: 1.3},
-    {id: 1, size: 3, class: '450', schedule: '', laborFactor: 1.4},
-    {id: 1, size: 3, class: '450', schedule: '80', laborFactor: 1.4},
-  ];
+  $ctrl.data = [];
 
   $ctrl.$onInit = onInit;
-  $ctrl.getLaborFactor = getLaborFactor;
-  $ctrl.getSizes = getSizes;
-  $ctrl.getScheduleClassPairs = getScheduleClassPairs;
   $ctrl.editing = false;
   $ctrl.editLaborFactor = editLaborFactor;
   $ctrl.setLaborFactors = setLaborFactors;
   $ctrl.cancelEdit = cancelEdit;
 
   function onInit() {
-    $ctrl.sizes = getSizes($ctrl.data);
-    $ctrl.scheduleClassPairs = getScheduleClassPairs($ctrl.data, $ctrl.sizes);
+    api.getLaborFactorData().then(value => {
+      $ctrl.data = value;
+      $ctrl.sizes = getSizes($ctrl.data);
+      $ctrl.scheduleClassPairs = getScheduleClassPairs($ctrl.data, $ctrl.sizes);
+    });
   }
 
   function getSizes(data) {
@@ -58,19 +50,6 @@ export function controller() {
       }
       return uniquePairs.concat(currentPair);
     }, []);
-  }
-
-  function getLaborFactor(schedule, class_, size) {
-    return $ctrl.data.reduce((laborFactor, item) => {
-      if (
-        (item.schedule == schedule || schedule === undefined) &&
-        class_ == item.class &&
-        item.size == size
-      ) {
-        laborFactor = item.laborFactor;
-      }
-      return laborFactor;
-    }, 0);
   }
 
   function editLaborFactor() {

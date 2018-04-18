@@ -8,6 +8,7 @@ function ApiService($http, $q) {
   service.get = apiGet;
   service.post = apiPost;
   service.put = apiPut;
+  service.getLaborFactorData = getLaborFactorData;
 
   function apiGet(endpoint) {
     return $http.get(endpoint).then(resolve, reject);
@@ -31,7 +32,22 @@ function ApiService($http, $q) {
       },
     });
   }
+
+  function getLaborFactorData() {
+    return $q.resolve([
+      {id: 1, size: 1, class: '150', schedule: '', laborFactor: 1.2},
+      {id: 1, size: 1, class: '300', schedule: '', laborFactor: 2.2},
+      {id: 1, size: 2, class: '150', schedule: '', laborFactor: 1.2},
+      {id: 1, size: 2, class: '300', schedule: '', laborFactor: 2.2},
+      {id: 1, size: 3, class: '150', schedule: '', laborFactor: 1.2},
+      {id: 1, size: 3, class: '300', schedule: '', laborFactor: 1.3},
+      {id: 1, size: 3, class: '450', schedule: '', laborFactor: 1.4},
+      {id: 1, size: 3, class: '450', schedule: '80', laborFactor: 1.4},
+    ]);
+  }
   return service;
 }
 
-export default angular.module('ng-starter.services.api', []).service('api', ApiService).name;
+export default angular
+  .module('ng-starter.services.api', [])
+  .service('api', ApiService).name;

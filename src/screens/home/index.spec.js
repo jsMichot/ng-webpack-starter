@@ -1,38 +1,28 @@
 import module, {controller} from './index';
+import apiModule from '../../services/api';
+
 describe('home component', () => {
   let $injector;
   let $rootScope;
   let $controller;
+  let api;
   let $ctrl;
+  let $q;
 
   beforeEach(() => {
-    angular.mock.module(module);
+    angular.mock.module(apiModule, module);
 
     angular.mock.inject(_$injector_ => {
       $injector = _$injector_;
       $rootScope = $injector.get('$rootScope');
       $controller = $injector.get('$controller');
-
+      api = $injector.get('api');
+      $q = $injector.get('$q');
       $ctrl = $controller(controller);
     });
   });
 
-  it('getSizes correctly returns unique array of sizes', () => {
-    const data = [
-      {id: 1, size: 1, class: '150', schedule: '', laborFactor: 1.2},
-      {id: 1, size: 1, class: '300', schedule: '', laborFactor: 2.2},
-      {id: 1, size: 2, class: '150', schedule: '', laborFactor: 1.2},
-      {id: 1, size: 2, class: '300', schedule: '', laborFactor: 2.2},
-      {id: 1, size: 3, class: '150', schedule: '', laborFactor: 1.2},
-      {id: 1, size: 3, class: '300', schedule: '', laborFactor: 1.3},
-      {id: 1, size: 3, class: '450', schedule: '', laborFactor: 1.4},
-    ];
-
-    const result = $ctrl.getSizes(data);
-    expect(result).toEqual([1, 2, 3]);
-  });
-
-  it('getScheduleClassPairs correctly returns unique array of scheduleClassPairs', () => {
+  it('onInit gets data', () => {
     const data = [
       {id: 1, size: 1, class: '150', schedule: '1', laborFactor: 1.2},
       {id: 1, size: 1, class: '300', schedule: '2', laborFactor: 2.2},
@@ -43,28 +33,19 @@ describe('home component', () => {
       {id: 1, size: 3, class: '450', schedule: '', laborFactor: 1.4},
     ];
 
-    const result = $ctrl.getScheduleClassPairs(data);
-    expect(result).toEqual([
+    spyOn(api, 'getLaborFactorData').and.returnValue($q.resolve(data));
+
+    $ctrl.$onInit();
+    $rootScope.$digest();
+
+    expect($ctrl.sizes).toEqual([1, 2, 3]);
+    expect($ctrl.scheduleClassPairs).toEqual([
       {schedule: '1', class: '150', 1: 1.2, 2: 0, 3: 0},
       {schedule: '2', class: '300', 1: 2.2, 2: 2.2, 3: 0},
       {schedule: '', class: '150', 1: 0, 2: 1.2, 3: 1.2},
       {schedule: '3', class: '300', 1: 0, 2: 0, 3: 1.3},
       {schedule: '', class: '450', 1: 0, 2: 0, 3: 1.4},
     ]);
-  });
-  it('getLaborFactor returns the correct laborFactor for a given schedule, class, size', () => {
-    const data = [
-      {id: 1, size: 1, class: '150', schedule: '', laborFactor: 1.2},
-      {id: 1, size: 1, class: '300', schedule: '', laborFactor: 2.2},
-      {id: 1, size: 2, class: '150', schedule: '', laborFactor: 1.2},
-      {id: 1, size: 2, class: '300', schedule: '', laborFactor: 2.2},
-      {id: 1, size: 3, class: '150', schedule: '', laborFactor: 1.2},
-      {id: 1, size: 3, class: '300', schedule: '', laborFactor: 1.3},
-      {id: 1, size: 3, class: '450', schedule: '', laborFactor: 1.4},
-    ];
-
-    const result = $ctrl.getLaborFactor('', 150, 2);
-    expect(result).toEqual(1.2);
   });
 
   it('editLaborFactor should set editValues to scheduleClassPairs', () => {
