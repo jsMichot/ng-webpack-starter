@@ -1,28 +1,56 @@
 <div class="home-component-header">
-  Home Page
-  <button ng-show="$ctrl.editing" ng-click="$ctrl.setLaborFactors()">Update Labor Factors</button>
-  <button ng-show="$ctrl.editing" ng-click="$ctrl.cancelEdit()">Cancel Edit</button>
-  <table>
+  <div ng-hide="$ctrl.addingRow">
+    Home Page
+    <button ng-show="$ctrl.editing" ng-click="$ctrl.setLaborFactors()">Update Labor Factors</button>
+    <button ng-show="$ctrl.editing" ng-click="$ctrl.cancelEdit()">Cancel Edit</button>
+    <button ng-hide="$ctrl.addingColumn" ng-click="$ctrl.addNewColumn()">Add New Column</button>
+    <button ng-show="$ctrl.addingColumn" ng-click="$ctrl.deleteNewColumn()">Delete New Column</button>
+    <button ng-show="$ctrl.addingColumn" ng-click="$ctrl.saveNewColumn()">Save New Column</button>
+    <button ng-hide="$ctrl.addingRow" ng-click="$ctrl.addNewRow()">Add New Row</button>
+  </div>
+  <form ng-show="$ctrl.addingRow">
+    <h2>Add New Item</h2>
+    <label>ID:
+      <input type="text" ng-model="$ctrl.newRowId" />
+    </label>
+    <br />
+    <label>CLASS:
+      <input type="text" ng-model="$ctrl.newRowClass" />
+    </label>
+    <br />
+    <label>SCHEDULE:
+      <input type="text" ng-model="$ctrl.newRowSchedule" />
+    </label>
+    <br />
+    <button ng-click="$ctrl.cancelNewRow()">Cancel New Row</button>
+    <button ng-click="$ctrl.saveNewRow()">Save New Row</button>
+  </form>
+  <table ng-hide="$ctrl.addingRow">
     <thead>
       <tr>
         <th class="tablePadding">Schedule</th>
         <th class="tablePadding">Class</th>
         <th ng-repeat="size in $ctrl.sizes">
-          {{size}}
+          <span>
+            {{size}}
+          </span>
+        </th>
+        <th ng-show="$ctrl.addingColumn">
+          <input type="text" ng-show="$ctrl.addingColumn" ng-model="$ctrl.tempSizes[$ctrl.tempSizes.length - 1]" />
         </th>
       </tr>
     </thead>
     <tbody>
-      <tr ng-repeat="pair in $ctrl.scheduleClassPairs" ng-init="outerIndex = $index" ng-click="$ctrl.editLaborFactor()">
+      <tr ng-repeat=" pair in $ctrl.scheduleClassPairs " ng-init="outerIndex= $index" ng-click="$ctrl.editLaborFactor() ">
         <td>
           {{pair.schedule}}
         </td>
         <td>
           {{pair.class}}
         </td>
-        <td ng-repeat="size in $ctrl.sizes">
-          <span ng-hide="$ctrl.editing">{{$ctrl.scheduleClassPairs[outerIndex][size]}}</span>
-          <input type="text" ng-show="$ctrl.editing" ng-model="$ctrl.editValues[outerIndex][size]" />
+        <td ng-repeat="size in $ctrl.sizes ">
+          <span ng-hide="$ctrl.editing ">{{$ctrl.scheduleClassPairs[outerIndex][size]}}</span>
+          <input type="text " ng-show="$ctrl.editing " ng-model="$ctrl.scheduleClassPairs[outerIndex][size] " />
         </td>
       </tr>
     </tbody>

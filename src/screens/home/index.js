@@ -7,12 +7,25 @@ export function controller(api) {
   const $ctrl = this;
 
   $ctrl.data = [];
+  $ctrl.sizes = [];
+  $ctrl.tempSizes = [];
 
   $ctrl.$onInit = onInit;
   $ctrl.editing = false;
+  $ctrl.addingColumn = false;
+  $ctrl.addingRow = false;
   $ctrl.editLaborFactor = editLaborFactor;
   $ctrl.setLaborFactors = setLaborFactors;
   $ctrl.cancelEdit = cancelEdit;
+  $ctrl.addNewColumn = addNewColumn;
+  $ctrl.deleteNewColumn = deleteNewColumn;
+  $ctrl.saveNewColumn = saveNewColumn;
+  $ctrl.addNewRow = addNewRow;
+  $ctrl.saveNewRow = saveNewRow;
+  $ctrl.cancelNewRow = cancelNewRow;
+  $ctrl.newRowId = 1;
+  $ctrl.newRowClass = '';
+  $ctrl.newRowSchedule = '';
 
   function onInit() {
     api.getLaborFactorData().then(value => {
@@ -39,7 +52,7 @@ export function controller(api) {
       if (_.find(uniquePairs, currentPair)) {
         return uniquePairs;
       }
-      for (let size of getSizes(data)) {
+      $ctrl.sizes.forEach(size => {
         const classScheduleSizeMatch = _.find(data, {
           class: currentPair.class,
           schedule: currentPair.schedule,
@@ -47,7 +60,7 @@ export function controller(api) {
         }) || {laborFactor: 0};
 
         currentPair[size] = classScheduleSizeMatch.laborFactor;
-      }
+      });
       return uniquePairs.concat(currentPair);
     }, []);
   }
@@ -60,17 +73,54 @@ export function controller(api) {
   }
 
   function setLaborFactors() {
+    $ctrl.editing = false;
+  }
+
+  function cancelEdit() {
     $ctrl.scheduleClassPairs = $ctrl.editValues.map(pair =>
       Object.assign({}, pair)
     );
     $ctrl.editing = false;
   }
 
-  function cancelEdit() {
-    $ctrl.editValues = $ctrl.scheduleClassPairs.map(pair =>
-      Object.assign({}, pair)
+  function addNewColumn() {
+    $ctrl.tempSizes = $ctrl.sizes.slice() || [];
+    $ctrl.tempSizes.push(
+      Math.floor(parseInt($ctrl.sizes[$ctrl.sizes.length - 1]) + 1)
     );
-    $ctrl.editing = false;
+    $ctrl.addingColumn = true;
+  }
+
+  function deleteNewColumn() {
+    $ctrl.addingColumn = false;
+  }
+
+  function saveNewColumn() {
+    $ctrl.sizes = _.uniq($ctrl.tempSizes).sort();
+    $ctrl.scheduleClassPairs = getScheduleClassPairs($ctrl.data, $ctrl.sizes);
+
+    $ctrl.addingColumn = false;
+  }
+
+  function addNewRow() {
+    $ctrl.addingRow = true;
+  }
+
+  function saveNewRow() {
+    $ctrl.data.push({
+      id: $ctrl.newRowId,
+      class: $ctrl.newRowClass,
+      schedule: $ctrl.newRowSchedule,
+    });
+    $ctrl.scheduleClassPairs = getScheduleClassPairs($ctrl.data, $ctrl.sizes);
+    $ctrl.cancelNewRow();
+  }
+
+  function cancelNewRow() {
+    $ctrl.newRowId = 1;
+    $ctrl.newRowClass = '';
+    $ctrl.newRowSchedule = '';
+    $ctrl.addingRow = false;
   }
 }
 

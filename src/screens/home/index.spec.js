@@ -57,19 +57,17 @@ describe('home component', () => {
   });
 
   it('setLaborFactor should set scheduleClassPairs to editValues', () => {
-    $ctrl.scheduleClassPairs = [{foo: 1}];
-    $ctrl.editValues = [{foo: 2}];
+    $ctrl.editing = true;
     $ctrl.setLaborFactors();
 
     expect($ctrl.editing).toBe(false);
-    expect($ctrl.scheduleClassPairs).toEqual([{foo: 2}]);
   });
 
-  it('cancelEdit should set editValues to scheduleClassPairs and editing to false', () => {
-    $ctrl.scheduleClassPairs = [{foo: 1}];
-    $ctrl.editValues = [{foo: 2}];
+  it('cancelEdit should set scheduleClassPairs to editValues and editing to false', () => {
+    $ctrl.editValues = [{foo: 1}];
+    $ctrl.scheduleClassPairs = [{foo: 2}];
     $ctrl.cancelEdit();
-    expect($ctrl.editValues).toEqual([{foo: 1}]);
+    expect($ctrl.scheduleClassPairs).toEqual([{foo: 1}]);
     expect($ctrl.editing).toBe(false);
   });
 
@@ -80,21 +78,111 @@ describe('home component', () => {
 
     expect($ctrl.scheduleClassPairs).toEqual([{foo: 1}]);
   });
-  it('when cancelEdit is called editValues and scheduleClassPairs should not point to the same array nor the same objects', () => {
+
+  it('when cancelEdit is called editValues and scheduleClassPairs should not point to the same array nor the same objects (i.e. editValues retains the pre-editing values of scheduleClassPairs)', () => {
     $ctrl.scheduleClassPairs = [{foo: 1}];
     $ctrl.editLaborFactor();
-    $ctrl.editValues[0].foo = 2;
+    $ctrl.scheduleClassPairs[0].foo = 2;
     $ctrl.cancelEdit();
-    $ctrl.editLaborFactor();
 
     expect($ctrl.editValues).toEqual([{foo: 1}]);
   });
-  it('when cancelEdit is called scheduleClassPairs should retain pre-editing value', () => {
-    $ctrl.scheduleClassPairs = [{foo: 1}];
-    $ctrl.editLaborFactor();
-    $ctrl.editValues[0].foo = 2;
-    $ctrl.cancelEdit();
 
-    expect($ctrl.scheduleClassPairs).toEqual([{foo: 1}]);
+  it('when addNewColumn is called sizes should be cloned to tempSizes (separate arrays) with an added size of the next whole number', () => {
+    $ctrl.sizes = [1, 2, 3];
+    $ctrl.addNewColumn();
+    expect($ctrl.tempSizes).toEqual([1, 2, 3, 4]);
+    $ctrl.sizes = [1, 2, 3, 4.34];
+    $ctrl.addNewColumn();
+    expect($ctrl.tempSizes).toEqual([1, 2, 3, 4.34, 5]);
+  });
+
+  it('when addNewColumn is called addingColumn should be set to true', () => {
+    $ctrl.addNewColumn();
+    expect($ctrl.addingColumn).toBe(true);
+  });
+  it('when saveNewColumn is called sizes should not contain any duplicates', () => {
+    $ctrl.sizes = [1, 2, 3, 3];
+    $ctrl.tempSizes = [1, 2, 3, 3, 3];
+    $ctrl.saveNewColumn();
+    expect($ctrl.sizes).toEqual([1, 2, 3]);
+  });
+
+  it('when deleteNewColumn is called addingColumn should be set to false', () => {
+    $ctrl.deleteNewColumn();
+    expect($ctrl.addingColumn).toBe(false);
+  });
+
+  it('when saveNewColumn is called sizes should be sorted', () => {
+    const data = [
+      {id: 1, size: 1, class: '150', schedule: '1', laborFactor: 1.2},
+      {id: 1, size: 1, class: '300', schedule: '2', laborFactor: 2.2},
+      {id: 1, size: 2, class: '150', schedule: '', laborFactor: 1.2},
+      {id: 1, size: 2, class: '300', schedule: '2', laborFactor: 2.2},
+      {id: 1, size: 3, class: '150', schedule: '', laborFactor: 1.2},
+      {id: 1, size: 3, class: '300', schedule: '3', laborFactor: 1.3},
+      {id: 1, size: 3, class: '450', schedule: '', laborFactor: 1.4},
+    ];
+    $ctrl.sizes = [1, 2, 3];
+    $ctrl.addNewColumn();
+    $ctrl.sizes.push(2.5);
+    $ctrl.saveNewColumn();
+    expect($ctrl.sizes).toEqual([1, 2, 2.5, 3, 4]);
+  });
+
+  it('addNewRow should set addingRow to true', () => {
+    $ctrl.addingRow = false;
+    $ctrl.addNewRow();
+    expect($ctrl.addingRow).toBe(true);
+  });
+
+  it('saveNewRow should add the new item to data', () => {
+    $ctrl.data = [
+      {id: 1, size: 1, class: '150', schedule: '1', laborFactor: 1.2},
+      {id: 1, size: 1, class: '300', schedule: '2', laborFactor: 2.2},
+      {id: 1, size: 2, class: '150', schedule: '', laborFactor: 1.2},
+      {id: 1, size: 2, class: '300', schedule: '2', laborFactor: 2.2},
+      {id: 1, size: 3, class: '150', schedule: '', laborFactor: 1.2},
+      {id: 1, size: 3, class: '300', schedule: '3', laborFactor: 1.3},
+      {id: 1, size: 3, class: '450', schedule: '', laborFactor: 1.4},
+    ];
+    $ctrl.newRowId = 1;
+    $ctrl.newRowClass = '200';
+    $ctrl.newRowSchedule = '';
+    $ctrl.saveNewRow();
+    expect($ctrl.data).toEqual([
+      {id: 1, size: 1, class: '150', schedule: '1', laborFactor: 1.2},
+      {id: 1, size: 1, class: '300', schedule: '2', laborFactor: 2.2},
+      {id: 1, size: 2, class: '150', schedule: '', laborFactor: 1.2},
+      {id: 1, size: 2, class: '300', schedule: '2', laborFactor: 2.2},
+      {id: 1, size: 3, class: '150', schedule: '', laborFactor: 1.2},
+      {id: 1, size: 3, class: '300', schedule: '3', laborFactor: 1.3},
+      {id: 1, size: 3, class: '450', schedule: '', laborFactor: 1.4},
+      {id: 1, class: '200', schedule: ''},
+    ]);
+  });
+
+  it('cancelNewRow should set newRowId to 1', () => {
+    $ctrl.newRowId = 4;
+    $ctrl.cancelNewRow();
+    expect($ctrl.newRowId).toBe(1);
+  });
+
+  it('cancelNewRow should set newRowClass to an empty string', () => {
+    $ctrl.newRowClass = '350';
+    $ctrl.cancelNewRow();
+    expect($ctrl.newRowClass).toBe('');
+  });
+
+  it('cancelNewRow should set newRowSchedule to an empty string', () => {
+    $ctrl.newRowSchedule = '3';
+    $ctrl.cancelNewRow();
+    expect($ctrl.newRowSchedule).toBe('');
+  });
+
+  it('cancelNewRow should set addingRow to false', () => {
+    $ctrl.addingRow = true;
+    $ctrl.cancelNewRow();
+    expect($ctrl.addingRow).toBe(false);
   });
 });
